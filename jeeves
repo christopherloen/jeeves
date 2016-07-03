@@ -1,0 +1,107 @@
+#!/bin/bash
+#Base vars
+
+pkgname="$2"
+
+#Base functions
+
+usage(){
+	echo -e "\nusage: jeeves [arg] PACKAGE [opt]"
+	echo -e "\nexamples:\n"
+	echo -e " - jeeves -S foo [download and install your foo from AUR]"
+  echo -e " - jeeves -S foo -nv [download and install your foo from AUR with low verbosity]"
+	echo -e " - jeeves -s foo [search for foo in AUR]"
+	echo -e " - jeeves -R foo [remove foo]"
+	echo -e " - jeeves -Rsn foo [remove foo and all its dependencies]\n"
+	echo -e "PLEASE NOTE that this is a simple script to see if the package"
+	echo -e "that you have just uploaded to AUR installs correctly."
+	echo -e "BEFORE INSTALLING a package you have to be sure that you have"
+	echo -e "all his required dependencies."
+	echo -e "\nTHIS IS NOT A REPLACEMENT OF PACMAN OR PACAUR (OR SIMILARS)\n"
+	echo -e "\n Enter 'jeeves --help' to see this\n"
+}
+
+view(){
+	echo "Choose an editor: "
+	read editor && "${editor}" PKGBUILD
+}
+
+standard(){
+  url="https://aur.archlinux.org/cgit/aur.git/snapshot/"
+	rm -rf "/tmp/${pkgname}/" #cleanup
+	install -d "/tmp/${pkgname}/" && rm -rf /tmp/${pkgname}/* && cd "/tmp/${pkgname}/"
+	wget "${url}${pkgname}.tar.gz" 2>/dev/null ##download aur source
+	bsdtar -xf "${pkgname}.tar.gz" && cd "${pkgname}"
+	read -p "View PKGBUILD? (y/N)" view
+        if [ "${view}" == "y" ]; then
+                view
+                makepkg && sudo pacman -U *.pkg.tar.xz
+        else
+                makepkg && sudo pacman -U *.pkg.tar.xz
+        fi
+
+}
+
+standard_nv(){
+  url="https://aur.archlinux.org/cgit/aur.git/snapshot/"
+	rm -rf "/tmp/${pkgname}/" #cleanup
+	install -d "/tmp/${pkgname}/" && rm -rf /tmp/${pkgname}/* && cd "/tmp/${pkgname}/"
+	wget "${url}${pkgname}.tar.gz" 2>/dev/null ##download aur source
+	bsdtar -xf "${pkgname}.tar.gz" && cd "${pkgname}"
+	read -p "View PKGBUILD? (y/N)" view
+        if [ "${view}" == "y" ]; then
+                view
+                makepkg 2>/dev/null && sudo pacman -U *.pkg.tar.xz
+        else
+                makepkg 2>/dev/null && sudo pacman -U *.pkg.tar.xz
+        fi
+
+}
+remove(){
+	sudo pacman -R $pkgname
+}
+remove_deps() {
+	sudo pacman -Rsn $pkgname
+}
+
+search(){
+	pacaur -s "${pkgname}"
+}
+
+
+###OPERATORS
+
+if [ "$1" = "-R" ]; then
+	remove
+fi
+
+
+if [ "$1" = "-Rsn" ]; then
+	remove_deps
+fi
+
+
+if [ "$1" = "--help" ]; then
+	usage
+fi
+
+
+if [ "$1" = "-S" ]; then
+	if [ "$3" == "-nv" ]; then
+		standard_nv
+	else
+	  standard
+	fi
+fi
+
+
+if [ "$1" = "" ]; then
+	if [ "$3" = "" ]; then
+		usage
+	fi
+fi
+
+
+if [ "$1" == "-s" ]; then
+	search
+fi
