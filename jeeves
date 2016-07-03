@@ -12,7 +12,7 @@ BASE='\033[0m'
 #Base functions
 
 usage(){
-	echo -e "    :: --> ${GREEN}jeeves-0.2${BASE}\n"
+	echo -e "    :: --> ${GREEN}jeeves-0.3${BASE}\n"
 	echo -e "${GREEN}usage: jeeves [arg] PACKAGE [opt]${BASE}"
 	echo -e "\nexamples:\n"
 	echo -e " - jeeves -S foo [download and install your foo from AUR]"
@@ -39,20 +39,15 @@ download() {
 
 upload(){
 	current="$(ls -a)"
-	echo ${current} | if grep -E '.git'
+	echo ${current} | if grep -q 'PKGBUILD' >/dev/null
 	                    then
-	                	if grep -E 'PKGBUILD'
-					then
-						makepkg --printsrcinfo > .SRCINFO
-						git add .
-						git commit -m "$opt"
-						git push origin master
-					else
-						echo -e "${RED} :: -> MISSING PKGBUILD, ABORTED${BASE}"
-				fi
-			  else
-				echo -e "${RED} :: -> NOT A VALID DIRECTORY, ABORTED${BASE}"
-			   fi
+  				makepkg --printsrcinfo > .SRCINFO
+				git add .
+				git commit -m "$opt"
+				git push origin master
+		       	  else
+				echo -e "${RED} :: -> Something has gone wrong, are you sure this is a valid directory?${BASE}"
+			  fi
 }
 
 view(){
