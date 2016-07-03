@@ -35,9 +35,9 @@ standard(){
 	read -p "View PKGBUILD? (y/N)" view
         if [ "${view}" == "y" ]; then
                 view
-                makepkg && sudo pacman -U *.pkg.tar.xz
+                makepkg -d && sudo pacman -U *.pkg.tar.xz
         else
-                makepkg && sudo pacman -U *.pkg.tar.xz
+                makepkg -d && sudo pacman -U *.pkg.tar.xz
         fi
 
 }
@@ -51,9 +51,9 @@ standard_nv(){
 	read -p "View PKGBUILD? (y/N)" view
         if [ "${view}" == "y" ]; then
                 view
-                makepkg 2>/dev/null && sudo pacman -U *.pkg.tar.xz
+                makepkg -d 2>/dev/null && sudo pacman -U *.pkg.tar.xz
         else
-                makepkg 2>/dev/null && sudo pacman -U *.pkg.tar.xz
+                makepkg -d 2>/dev/null && sudo pacman -U *.pkg.tar.xz
         fi
 
 }
