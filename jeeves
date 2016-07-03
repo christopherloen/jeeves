@@ -2,23 +2,33 @@
 #Base vars
 
 pkgname="$2"
-
+opt="$3"
+arg="$1"
 #Base functions
 
 usage(){
-	echo -e "\nusage: jeeves [arg] PACKAGE [opt]"
+	echo -e "    :: --> jeeves-0.2\n"
+	echo -e "usage: jeeves [arg] PACKAGE [opt]"
 	echo -e "\nexamples:\n"
 	echo -e " - jeeves -S foo [download and install your foo from AUR]"
   echo -e " - jeeves -S foo -nv [download and install your foo from AUR with low verbosity]"
 	echo -e " - jeeves -s foo [search for foo in AUR]"
 	echo -e " - jeeves -R foo [remove foo]"
-	echo -e " - jeeves -Rsn foo [remove foo and all its dependencies]\n"
+	echo -e " - jeeves -Rsn foo [remove foo and all its dependencies]"
+	echo -e " - jeeves -u . 'Initial commit' [upload current dir to origin (AUR) with commit message]\n"
 	echo -e "PLEASE NOTE that this is a simple script to see if the package"
 	echo -e "that you have just uploaded to AUR installs correctly."
 	echo -e "BEFORE INSTALLING a package you have to be sure that you have"
 	echo -e "all his required dependencies."
-	echo -e "\nTHIS IS NOT A REPLACEMENT OF PACMAN OR PACAUR (OR SIMILARS)\n"
-	echo -e "\n Enter 'jeeves --help' to see this\n"
+	echo -e "\nTHIS IS NOT A REPLACEMENT OF PACMAN OR PACAUR (OR SIMILARS)"
+	echo -e "\nEnter 'jeeves --help' to see this\n"
+}
+
+upload(){
+  makepkg --printsrcinfo > .SRCINFO
+	git add .
+	git commit -m "$opt"
+	git push origin master
 }
 
 view(){
@@ -35,9 +45,9 @@ standard(){
 	read -p "View PKGBUILD? (y/N)" view
         if [ "${view}" == "y" ]; then
                 view
-                makepkg -d && sudo pacman -U *.pkg.tar.xz
+                makepkg && sudo pacman -U *.pkg.tar.xz
         else
-                makepkg -d && sudo pacman -U *.pkg.tar.xz
+                makepkg && sudo pacman -U *.pkg.tar.xz
         fi
 
 }
@@ -51,9 +61,9 @@ standard_nv(){
 	read -p "View PKGBUILD? (y/N)" view
         if [ "${view}" == "y" ]; then
                 view
-                makepkg -d 2>/dev/null && sudo pacman -U *.pkg.tar.xz
+                makepkg 2>/dev/null && sudo pacman -U *.pkg.tar.xz
         else
-                makepkg -d 2>/dev/null && sudo pacman -U *.pkg.tar.xz
+                makepkg 2>/dev/null && sudo pacman -U *.pkg.tar.xz
         fi
 
 }
@@ -65,29 +75,38 @@ remove_deps() {
 }
 
 search(){
-	pacaur -s "${pkgname}"
+	cower -s "${pkgname}" | awk '/aur\//'
 }
 
 
 ###OPERATORS
+if [[ "${arg}" = "-u" ]]; then
+	if [[ "${pkgname}" = "." ]]; then
+		if [ -z "${opt}" ]; then
+			echo -e "Sorry, missing commit message" && exit
+		else
+			upload
+		fi
+	fi
+fi
 
-if [ "$1" = "-R" ]; then
+if [ "${arg}" = "-R" ]; then
 	remove
 fi
 
 
-if [ "$1" = "-Rsn" ]; then
+if [ "${arg}" = "-Rsn" ]; then
 	remove_deps
 fi
 
 
-if [ "$1" = "--help" ]; then
+if [ "${arg}" = "--help" ]; then
 	usage
 fi
 
 
-if [ "$1" = "-S" ]; then
-	if [ "$3" == "-nv" ]; then
+if [ "${arg}" = "-S" ]; then
+	if [ "${opt}" == "-nv" ]; then
 		standard_nv
 	else
 	  standard
@@ -95,13 +114,13 @@ if [ "$1" = "-S" ]; then
 fi
 
 
-if [ "$1" = "" ]; then
-	if [ "$3" = "" ]; then
+if [ "${arg}" = "" ]; then
+	if [ "${opt}" = "" ]; then
 		usage
 	fi
 fi
 
 
-if [ "$1" == "-s" ]; then
+if [ "${arg}" == "-s" ]; then
 	search
 fi
