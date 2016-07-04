@@ -12,11 +12,11 @@ BASE='\033[0m'
 #Base functions
 
 usage(){
-	echo -e "\n:: --> ${GREEN}jeeves-0.3${BASE}\n"
+	echo -e "\n:: --> ${GREEN}jeeves-0.3.1${BASE}\n"
 	echo -e "${GREEN}usage: jeeves [arg] PACKAGE [opt]${BASE}"
 	echo -e "\nexamples:\n"
 	echo -e " - jeeves -S foo [download and install your foo from AUR]"
-        echo -e " - jeeves -S foo -nv [download and install your foo from AUR with low verbosity]"
+  echo -e " - jeeves -S foo -nv [download and install your foo from AUR with low verbosity]"
 	echo -e " - jeeves -s foo [search for foo in AUR]"
 	echo -e " - jeeves -u 'Some message' [upload current dir to origin (AUR) with commit message]\n"
 	echo -e "${YELLOW}PLEASE NOTE${BASE} that this is a simple script to see if the package"
@@ -41,13 +41,13 @@ upload(){
 	sleep 0.75s
 	echo ${current} | if grep -q 'PKGBUILD' >/dev/null
 	                    then
-  				makepkg --printsrcinfo > .SRCINFO
-				git add .
-				git commit -m "${pkgname}"
-				git push origin master
-			    else
-				echo -e "\n${RED} :: -> Something has gone wrong, are you sure this is a valid directory?${BASE}\n"
-			   fi
+  												makepkg --printsrcinfo > .SRCINFO
+													git add .
+													git commit -m "${pkgname}"
+													git push origin master
+										else
+												  echo -e "\n${RED} :: -> Something has gone wrong, are you sure this is a valid directory?${BASE}\n"
+										fi
 }
 
 view(){
