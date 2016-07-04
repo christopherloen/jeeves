@@ -12,15 +12,13 @@ BASE='\033[0m'
 #Base functions
 
 usage(){
-	echo -e "    :: --> ${GREEN}jeeves-0.3${BASE}\n"
+	echo -e "\n:: --> ${GREEN}jeeves-0.3${BASE}\n"
 	echo -e "${GREEN}usage: jeeves [arg] PACKAGE [opt]${BASE}"
 	echo -e "\nexamples:\n"
 	echo -e " - jeeves -S foo [download and install your foo from AUR]"
   echo -e " - jeeves -S foo -nv [download and install your foo from AUR with low verbosity]"
 	echo -e " - jeeves -s foo [search for foo in AUR]"
-	echo -e " - jeeves -R foo [remove foo]"
-	echo -e " - jeeves -Rsn foo [remove foo and all its dependencies]"
-	echo -e " - jeeves -u . 'Some message' [upload current dir to origin (AUR) with commit message]\n"
+	echo -e " - jeeves -u 'Some message' [upload current dir to origin (AUR) with commit message]\n"
 	echo -e "${YELLOW}PLEASE NOTE${BASE} that this is a simple script to see if the package"
 	echo -e "that you have just uploaded to AUR installs correctly."
 	echo -e "${YELLOW}BEFORE INSTALLING${BASE} a package you have to be sure that you have"
@@ -39,15 +37,17 @@ download() {
 
 upload(){
 	current="$(ls -a)"
+	echo -e "\n${GREEN}:: -> Trying to upload current directory...${BASE}"
+	sleep 0.75s
 	echo ${current} | if grep -q 'PKGBUILD' >/dev/null
 	                    then
   				makepkg --printsrcinfo > .SRCINFO
 				git add .
-				git commit -m "$opt"
+				git commit -m "${pkgname}"
 				git push origin master
-		       	  else
-				echo -e "${RED} :: -> Something has gone wrong, are you sure this is a valid directory?${BASE}"
-			  fi
+			    else
+				echo -e "\n${RED} :: -> Something has gone wrong, are you sure this is a valid directory?${BASE}\n"
+			   fi
 }
 
 view(){
@@ -78,12 +78,6 @@ standard_nv(){
         fi
 
 }
-remove(){
-	sudo pacman -R $pkgname
-}
-remove_deps() {
-	sudo pacman -Rsn $pkgname
-}
 
 search(){
 	cower -s "${pkgname}" | awk '/aur\//' | sed $'s/aur\//\e[1m&\e[0m/'
@@ -91,23 +85,12 @@ search(){
 
 
 ###OPERATORS
-if [[ "${arg}" = "-u" ]]; then
-	if [[ "${pkgname}" = "." ]]; then
-		if [ -z "${opt}" ]; then
+if [ "${arg}" = "-u" -o "${arg}" = "--upload" ]; then
+		if [ -z "${pkgname}" ]; then
 			echo -e "\n${RED}Sorry, missing commit message, aborted. :(${BASE}\n" && exit
 		else
 			upload
 		fi
-	fi
-fi
-
-if [ "${arg}" = "-R" ]; then
-	remove
-fi
-
-
-if [ "${arg}" = "-Rsn" ]; then
-	remove_deps
 fi
 
 
@@ -117,7 +100,7 @@ fi
 
 
 if [ "${arg}" = "-S" ]; then
-	if [ "${opt}" == "-nv" ]; then
+	if [ "${opt}" = "-nv" ]; then
 		standard_nv
 	else
 	  standard
@@ -125,13 +108,11 @@ if [ "${arg}" = "-S" ]; then
 fi
 
 
-if [ "${arg}" = "" ]; then
-	if [ "${opt}" = "" ]; then
+if [ "${arg}" = "" -o "${arg}" = "--help" -o "${arg}" = "-h" ]; then
 		usage
-	fi
 fi
 
 
-if [ "${arg}" == "-s" ]; then
+if [ "${arg}" = "-s" -o "${arg}" = "--search" ]; then
 	search
 fi
