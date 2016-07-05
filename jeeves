@@ -1,10 +1,12 @@
 #!/bin/bash
+
 #Base vars
 
 pkgname="$2"
 opt="$3"
 arg="$1"
 RED='\033[1;31m'
+BLUE='\033[1;34m'
 GREEN='\033[1;32m'
 YELLOW='\033[1;33m'
 BASE='\033[0m'
@@ -12,19 +14,25 @@ BASE='\033[0m'
 #Base functions
 
 usage(){
-	echo -e "\n:: --> ${GREEN}jeeves-0.3.1${BASE}\n"
+	echo -e "\n:: --> ${GREEN}jeeves-0.3.2${BASE}\n"
 	echo -e "${GREEN}usage: jeeves [arg] PACKAGE [opt]${BASE}"
 	echo -e "\nexamples:\n"
 	echo -e " - jeeves -S foo [download and install your foo from AUR]"
   echo -e " - jeeves -S foo -nv [download and install your foo from AUR with low verbosity]"
 	echo -e " - jeeves -s foo [search for foo in AUR]"
-	echo -e " - jeeves -u 'Some message' [upload current dir to origin (AUR) with commit message]\n"
+	echo -e " - jeeves -u 'Some message' [upload current dir to origin (AUR) with commit message]"
+	echo -e " - jeeves -c 'some-package' [clone 'some-package' dir from AUR]\n"
 	echo -e "${YELLOW}PLEASE NOTE${BASE} that this is a simple script to see if the package"
 	echo -e "that you have just uploaded to AUR installs correctly."
 	echo -e "${YELLOW}BEFORE INSTALLING${BASE} a package you have to be sure that you have"
 	echo -e "all his required dependencies."
 	echo -e "\n${YELLOW}THIS IS NOT A REPLACEMENT OF PACMAN OR PACAUR (OR SIMILARS)${BASE}"
 	echo -e "\nEnter 'jeeves --help' to see this :)\n"
+}
+
+clone(){
+	git clone "ssh+git://aur@aur.archlinux.org/${pkgname}.git"
+	echo -e "\n${GREEN}Done :)${BASE}"
 }
 
 download() {
@@ -41,25 +49,21 @@ upload(){
 	sleep 0.75s
 	echo ${current} | if grep -q 'PKGBUILD' >/dev/null
 	                    then
-  												makepkg --printsrcinfo > .SRCINFO
-													git add .
-													git commit -m "${pkgname}"
-													git push origin master
-										else
-												  echo -e "\n${RED} :: -> Something has gone wrong, are you sure this is a valid directory?${BASE}\n"
-										fi
-}
-
-view(){
-	echo -e "${GREEN}Choose an editor:${BASE} "
-	read editor && "${editor}" PKGBUILD
+  				               makepkg --printsrcinfo > .SRCINFO
+			                   git add .
+												 git commit -m "${pkgname}"
+												 git push origin master
+			  						  else
+												 echo -e "\n${RED} :: -> Something has gone wrong, are you sure this is a valid directory?${BASE}\n"
+			  						fi
 }
 
 standard(){
+	echo -e "${BLUE}:: ->${GREEN} Downloading...${BASE}\n"
   download
-	read -p "View PKGBUILD? (y/N)" view
-        if [ "${view}" == "y" ]; then
-                view
+	read -p "View PKGBUILD? (y/N)" edit
+        if [ "${edit}" == "y" ]; then
+                read -p "Choose an editor:" view && ${view} PKGBUILD
                 makepkg -d && sudo pacman -U *.pkg.tar.xz
         else
                 makepkg -d && sudo pacman -U *.pkg.tar.xz
@@ -68,23 +72,20 @@ standard(){
 }
 
 standard_nv(){
+	echo -e "${BLUE}:: ->${GREEN} Downloading...${BASE}\n"
   download
-	read -p "View PKGBUILD? (y/N)" view
-        if [ "${view}" == "y" ]; then
-                view
-                makepkg -d 2>/dev/null && sudo pacman -U *.pkg.tar.xz
-        else
-                makepkg -d 2>/dev/null && sudo pacman -U *.pkg.tar.xz
-        fi
-
+	echo -e "${BLUE}:: ->${GREEN} Building and installing ...${BASE}\n"
+  makepkg -d 2>/dev/null && sudo pacman -U *.pkg.tar.xz
 }
 
 search(){
+	echo ""
 	cower -s "${pkgname}" | awk '/aur\//' | sed $'s/aur\//\e[1m&\e[0m/'
+	echo ""
 }
 
 
-###OPERATORS
+#OPERATORS
 if [ "${arg}" = "-u" -o "${arg}" = "--upload" ]; then
 		if [ -z "${pkgname}" ]; then
 			echo -e "\n${RED}Sorry, missing commit message, aborted. :(${BASE}\n" && exit
@@ -112,6 +113,13 @@ if [ "${arg}" = "" -o "${arg}" = "--help" -o "${arg}" = "-h" ]; then
 		usage
 fi
 
+if [ "${arg}" = "-c" -o "${arg}" = "--clone" ]; then
+	if [ -z "${opt}" ]; then
+		clone
+	else
+	  echo -e "${RED}Too many arguments, aborted. See --help for info.   :(${BASE}"
+	fi
+fi
 
 if [ "${arg}" = "-s" -o "${arg}" = "--search" ]; then
 	search
