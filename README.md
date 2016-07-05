@@ -4,7 +4,7 @@ These are, for example, the cloning of a new empty directory, the uploading of a
 and the testing of a package (downloading and installing).
 
 # Usage
-:: --> jeeves-0.3.1
+:: --> jeeves-0.3.2
 
 usage: jeeves [arg] PACKAGE [opt]
 
