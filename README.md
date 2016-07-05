@@ -27,9 +27,9 @@ Before installing, make sure you are an AUR user ready to maintain packages,
 otherwise jeeves can't work.
 
 Installing from github:
-git clone https://github.com/christopherloen/jeeves.git
-cd jeeves
-chmod +x jeeves
-cp jeeves /usr/bin/jeeves      (this as root)
+git clone https://github.com/christopherloen/jeeves.git \n
+cd jeeves \n
+chmod +x jeeves \n
+cp jeeves /usr/bin/jeeves      (this as root) \n
 
 Otherwise you can install jeeves directly from AUR using your favourite AUR helper
