@@ -1,7 +1,6 @@
 # jeeves
 jeeves is a simple script that automates the main processes of package creation for Arch Linux User Repository.
-These are, for example, the cloning of a new empty directory, the uploading of a directory to AUR
-and the testing of a package (downloading and installing).
+These are, for example, cloning a new empty directory, uploading a directory to AUR or testing a package (downloading and installing).
 
 # Usage
 :: --> jeeves-0.3.2
